@@ -119,4 +119,43 @@ public class AutorRestControllerTest {
             .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void quandoPUTAtualizarDeveRetornarAutorComStatusCode200() throws Exception {
+        var requestBody = AutorRequestBuilder.builder().build();
+        var responseBody = AutorResponseBuilder.builder().build();
+        var id = responseBody.getId();
+        var json = objectMapper.writeValueAsString(requestBody);
+
+        when(service.atualizar(id, requestBody)).thenReturn(responseBody);
+
+        mockMvc.perform(put(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON).content(json))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(responseBody.getId().intValue())))
+            .andExpect(jsonPath("$.nome", is(responseBody.getNome())))
+            .andExpect(jsonPath("$.dataNascimento", is(responseBody.getDataNascimento().toString())))
+            .andExpect(jsonPath("$.dataFalecimento", is(responseBody.getDataFalecimento().toString())));
+    }
+
+    @Test
+    void quandoPUTAtualizarComIdInvalidoDeveRetornarStatusCode404() throws Exception {
+        var id = 1L;
+        var requestBody = AutorRequestBuilder.builder().build();
+        var json = objectMapper.writeValueAsString(requestBody);
+
+        when(service.atualizar(id, requestBody)).thenThrow(AutorNaoEncontradoException.class);
+
+        mockMvc.perform(put(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON).content(json))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void quandoPUTAtualizarComDadosInvalidosDeveRetornarStatusCode400() throws Exception {
+        var id = 1L;
+        var requestBody = AutorRequestBuilder.builder().nome("").build();
+        var json = objectMapper.writeValueAsString(requestBody);
+
+        mockMvc.perform(put(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON).content(json))
+            .andExpect(status().isBadRequest());
+    }
+
 }
