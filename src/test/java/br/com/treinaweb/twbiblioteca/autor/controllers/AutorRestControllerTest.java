@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import br.com.treinaweb.twbiblioteca.autor.builders.AutorResponseBuilder;
+import br.com.treinaweb.twbiblioteca.autor.exceptions.AutorNaoEncontradoException;
 import br.com.treinaweb.twbiblioteca.autor.services.AutorService;
 
 @WebMvcTest(AutorRestController.class)
@@ -40,6 +41,31 @@ public class AutorRestControllerTest {
             .andExpect(jsonPath("$[0].nome", is(responseBody.getNome())))
             .andExpect(jsonPath("$[0].dataNascimento", is(responseBody.getDataNascimento().toString())))
             .andExpect(jsonPath("$[0].dataFalecimento", is(responseBody.getDataFalecimento().toString())));
+    }
+
+    @Test
+    void quandoGETBuscarPorIdComIdValidoDeveRetornarAutorComStatusCode200() throws Exception {
+        var responseBody = AutorResponseBuilder.builder().build();
+        var id = responseBody.getId();
+
+        when(service.buscarPorId(id)).thenReturn(responseBody);
+
+        mockMvc.perform(get(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(responseBody.getId().intValue())))
+            .andExpect(jsonPath("$.nome", is(responseBody.getNome())))
+            .andExpect(jsonPath("$.dataNascimento", is(responseBody.getDataNascimento().toString())))
+            .andExpect(jsonPath("$.dataFalecimento", is(responseBody.getDataFalecimento().toString())));
+    }
+
+    @Test
+    void quandoGETBuscarPorIdComIdInvalidoDeveRetornarStatusCode404() throws Exception {
+        var id = 1L;
+
+        when(service.buscarPorId(id)).thenThrow(AutorNaoEncontradoException.class);
+
+        mockMvc.perform(get(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 
 }
