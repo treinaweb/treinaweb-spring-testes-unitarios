@@ -68,4 +68,24 @@ public class AutorRestControllerTest {
             .andExpect(status().isNotFound());
     }
 
+    @Test
+    void quandoDELETEExcluirPorIdComIdValidoDeveRetornarStatusCode204() throws Exception {
+        var id = 1L;
+
+        doNothing().when(service).excluirPorId(id);
+
+        mockMvc.perform(delete(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void quandoDELETEExcluirPorIdComIdInvalidoDeveRetornarStatusCode404() throws Exception {
+        var id = 1L;
+
+        doThrow(AutorNaoEncontradoException.class).when(service).excluirPorId(id);
+
+        mockMvc.perform(delete(AUTOR_API_URL_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
 }
