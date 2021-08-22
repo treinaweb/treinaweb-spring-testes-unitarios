@@ -21,6 +21,12 @@ public class AutorRequestBuilder {
         return builder;
     }
 
+    public AutorRequestBuilder nome(String nome) {
+        autorRequest.setNome(nome);
+
+        return this;
+    }
+
     public AutorRequest build() {
         return autorRequest;
     }
